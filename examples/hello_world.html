@@ -1,0 +1,34 @@
+
+<html lang="en">   
+	<head>
+	    <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+	    <script type="text/javascript" src="/vendor/jquery/jquery-2.0.3.min.js"></script>
+	    <script type="text/javascript" src="/assets/js/pengine.js"></script>
+	    <script type="text/x-prolog">
+	
+	        main :-
+	        	output('Hello world!'),
+	        	sleep(1),
+	        	output('Goodbye world!'),
+	        	sleep(1),
+	        	main.
+	        	
+		</script>
+	    <script type="text/javascript">
+	        var pengine = new Pengine({
+	            onoutput: message,
+	            onerror: message	            
+	        });
+	        function message() {
+	        	$("#msg").html("<h1>" + this.data + "</h1>");
+	        }
+	        pengine.query('main');
+	    </script>
+	</head>
+	<body>
+	    <center style="margin-top:200px;">
+        	<div id="msg"></div>
+        	<button onclick="pengine.abort()">Abort</button>
+	    </center>
+	</body>
+</html>

@@ -1,0 +1,214 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <meta name="description" content="">
+        <meta name="author" content="">
+        <title>Pengine Admin</title>
+        <!-- Bootstrap core CSS -->
+        <link rel="stylesheet" href="/vendor/bootstrap3/css/bootstrap.css">
+        <script type="text/javascript" src="/vendor/jquery/jquery-2.0.3.min.js"></script>
+        <script type="text/javascript" src="/vendor/bootstrap3/js/bootstrap.js"></script>
+        <!-- Custom styles for this template -->
+        <link href="css/admin.css" rel="stylesheet">
+        <style>
+            th button {
+                width: 140px;
+            }
+            .label {
+                width: 100%;
+            }
+            tr.Unload {
+                background-color: rgb(217, 237, 247);
+                color: darkblue;
+            }
+            tr.Load {
+                background-color: rgb(223, 240, 216);
+                color: darkblue;
+            }
+            td.btn-cell {
+                   width:1px;
+            }
+            td.widget-cell {
+                width:1px;
+            }
+            .heading td {
+                font-weight: bold;
+            }
+            .code {
+                font-family: monospace;
+            }
+            .blocked {
+                text-decoration:line-through;
+            } 
+            .mylabel {
+                border-radius: 3px;
+                border-collapse: collapse;
+                color: rgb(255, 255, 255);
+                font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+                font-size: 11px;
+                font-weight: bold;
+                line-height: 14px;
+                padding: 3px 6px;
+                text-align: center;
+                vertical-align: bottom;
+                width: 100%;
+            }
+            .mylabel.unknown {
+                background-color: rgb(153, 153, 153);
+            }
+            .mylabel.safe {
+                background-color: rgb(92, 184, 92);
+            }
+            .mylabel.unsafe {
+                background-color: rgb(217, 83, 79);
+            }
+        </style>
+        <script type="text/javascript">
+            function app_table(arr) {
+                var html = ""
+                for (var i in arr) {
+                html += '<table style="margin-top:40px" class="table table-condensed table-bordered"><tbody>';
+                    var app = arr[i].app;
+                    //var file = arr[i].file;
+                    var loaded = arr[i].loaded ? "Load" : "Unload";
+                    var loader = arr[i].loaded ? "Unload" : "Load";
+                    var preds = arr[i].preds;
+                    html += '<tr id="'+app+'-row" class="'+loaded+'"><th>'+app+'</th><th colspan="2"><button id="'+app+'"class="btn btn-xs btn-primary">'+loader+'</button></th></tr>';
+                    html += '<tr class="heading"><td>Exported predicates</td><td style="text-align:center;">Safety</td><td style="text-align:center;">Blocked</td></tr>';
+                    for (var i in preds) {
+                        var pred = preds[i].pred;
+                        var id = app+pred.replace("/",""); // since leaving "/" in there -> malformed expression
+                        var safety = preds[i].safety;
+                        var checked = "";
+                        var blocked = "";
+                        if (preds[i].blocked) {
+                            checked = "checked";
+                            blocked = "blocked";
+                        }                        
+                        html += '<tr id="'+id+'"><td class="code '+blocked+'">'+pred+'</td><td class="btn-cell"><div class="mylabel '+safety+'">'+safety+'</div></td><td style="text-align:center;" class="btn-cell"><input type="checkbox" onchange="change_blocking(event,\''+app+'\',\''+pred+'\')"'+checked+'></td></tr>';
+                    }
+                    html += '<tr><td id="'+app+'-message" style="border:none" colspan="3"></td></tr>';
+                    html += '</tbody></table>'
+                }
+                
+                return html;
+            }
+            
+            function install_handlers(arr) {
+                for (var i in arr) {
+                    var app = arr[i].app;
+                    if (arr[i].loaded) {
+                        $("#"+app).off('click').on('click', function(e) {
+                            app_unload(e.target.id);
+                        })
+                    } else {
+                        $("#"+app).off('click').on('click', function(e) {
+                            app_load(e.target.id)
+                        })
+                    }
+                }
+            }
+                        
+            
+            function app_load(app) {
+                $.get('/admin/app/load?app='+app, function(obj) {
+                    if (obj.loaded) {
+                        $("#"+app+"-row").removeClass("Unload").addClass("Load");
+                        $("#"+app).css('background-color','rgb(92, 184, 92)');
+                        $("#"+app).text('Unload');
+                        $("#"+app).off('click').on('click', function(e) {
+                            app_unload(e.target.id);
+                        })
+                        var safety = obj.safety;
+                        var unsafe = "";
+                        for (var i in safety) {
+                            var pred = safety[i].pred;
+                            var id = app+pred.replace("/","");
+                            var safety2 = safety[i].safety;
+                            $("#"+id+" .mylabel").replaceWith('<div class="mylabel '+safety2+'">'+safety2+'</div>')
+                            if (safety2 === "unsafe") {
+                                $("#"+id+" :checkbox").prop('checked', true);
+                                $("#"+id+" :first").addClass("blocked");
+                                unsafe = "However, some predicates were deemed unsafe and are therefore blocked.";
+                            }
+                            $("#"+app+"-message").html('<div style="margin:0" class="alert alert-success alert-dismissable"><button type="button" class="close" data-dismiss="alert" aria-hidden="true">&times;</button>App <b>'+app+'</b> was successfully loaded. '+unsafe+'</div>');
+                            setTimeout(function () {$("#"+app+"-message").html("")}, 3000)
+                        }
+                    } else if (obj.error) {
+                        $("#"+app+"-message").html('<div style="margin:0" class="alert alert-danger alert-dismissable"><button type="button" class="close" data-dismiss="alert" aria-hidden="true">&times;</button><strong>Error: </strong>'+obj.error+'.</div>');
+                    }
+                });                
+            }
+            
+            
+            function app_unload(app) {
+                $.get('/admin/app/unload?app='+app, function(obj) {
+                    if (obj.unloaded) {
+                        $("#"+app+"-row").removeClass("Load").addClass("Unload");
+                        $("#"+app).css('background-color','rgb(66, 139, 202)');
+                        $("#"+app).text('Load');
+                        $("#"+app).off('click').on('click', function(e) {
+                            app_load(e.target.id);
+                        })
+                        var unblocked = obj.unblocked;
+                        for (var i in unblocked) {
+                            var pred = unblocked[i];
+                            var id = app+pred.replace("/","");
+                            $("#"+id+" .mylabel").replaceWith('<div class="mylabel unknown">unknown</div>');
+                            $("#"+id+" :checkbox").prop('checked', false);
+                            $("#"+id+" :first").removeClass("blocked");
+                        }
+                    }
+                });                
+            }
+            
+            function change_blocking(event, app, pred) {
+                var checked = event.target.checked;
+                var id = app+pred.replace("/","");
+                if (checked) {
+                    $.get('/admin/app/block?app='+app+'&pi='+pred, function(obj) {
+                        $("#"+id+" :first").addClass("blocked");
+                    });
+                } else {
+                    $.get('/admin/app/unblock?app='+app+"&pi="+pred, function(obj) {
+                        $("#"+id+" :first").removeClass("blocked");
+                    });
+                }
+            }
+                
+            function start() {
+                $.get('/admin/apps/analyse', function(obj) {
+                    if (obj.ok) {
+                        $.get('/admin/apps/list', function(obj2) {
+                            $('#applications').html(app_table(obj2.apps));
+                            install_handlers(obj2.apps)
+                        })
+                    }
+                });
+            }
+            
+        </script>
+    </head>
+    <body onload="start()">
+        <div class="container-narrow">
+            <div class="header">
+                <ul class="nav nav-pills pull-right">
+                    <li class="active"><a href="#">Apps</a></li>
+                    <li><a href="/admin/server.html">Server</a></li>
+                    <li><a href="/admin/statistics.html">Statistics</a></li>
+                    <li><a href="/admin/account.html">Account</a></li>
+                </ul>
+                <h3 class="text-muted">Pengine Administrator</h3>
+            </div>
+            <div id="errors"></div>
+            <div id="warnings"></div>
+            <div id="applications"></div>
+            <div class="footer">
+                <p>&copy; Spyderbrain Technologies, 2013</p>
+            </div>
+        </div>
+        <!-- /container -->
+    </body>
+</html>

@@ -1,0 +1,21 @@
+<html lang="en">   
+	<head>
+	    <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+	    <title>Eight Queens Demo</title>
+	    <meta name="author" content="Torbjörn Lager and Jan Wielmaker">
+        <link href="css/app.css" rel="stylesheet">
+	    <script type="text/javascript" src="/vendor/jquery/jquery-2.0.3.min.js"></script>
+	    <script type="text/javascript" src="/assets/js/pengine.js"></script>
+	    <script type="text/javascript" src="js/app.js"></script>
+	</head>
+	<body onload="board(boardsize, boardwidth)">
+	    <center style="margin-top:20px;">
+	    	<div id="board"></div>
+	    	<div style="margin-top:20px;">
+	        	<button id="first" onclick="query()">First</button>
+	        	<button id="next" onclick="next()">Next</button>
+	        	<div style="margin-top:20px;" id="msg"></div>
+	        </div> 
+	    </center>
+	</body>
+</html>

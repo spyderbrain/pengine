@@ -1,0 +1,66 @@
+
+<html lang="en">   
+	<head>
+	    <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+	    <script type="text/javascript" src="/vendor/jquery/jquery-2.0.3.min.js"></script>
+	    <script type="text/javascript" src="/assets/js/pengine.js"></script>
+        <style>
+            input {
+				outline: none !important;
+				color: white;
+				background-color: white;
+				margin: 40px;
+				border: 0px;
+				width: 10px;
+				-webkit-transform: scale(6.0, 6.0);
+				-moz-transform: scale(6.0, 6.0);
+				-ms-transform: scale(6.0, 6.0);
+				transform: scale(6.0, 6.0);
+			}
+        </style>
+        <script type="text/x-prolog">
+	
+	        main :-
+	        	output('Hello world!'),
+	        	sleep(1),
+	        	output('Goodbye world!'),
+	        	sleep(1),
+	        	main.
+	        	
+		</script>
+	    <script type="text/javascript">
+        
+            function say(str) {
+    			sayText(str, 1, 1, 2);
+            }
+            
+	        var pengine = new Pengine({
+	            onoutput: message,
+	            onerror: message	            
+	        });
+	        function message() {
+	        	say(this.data);
+	        }
+	        
+	    </script>
+	    <script type="text/javascript">
+    		function vh_sceneLoaded(sceneIndex) {
+                //pengine.query('main');
+            }
+	    </script>
+	</head>
+	<body>
+    	<center>
+			<script 
+                type="text/javascript" 
+                src="http://vhss-d.oddcast.com/vhost_embed_functions_v2.php?acc=557013&amp;js=1">
+            </script>
+			<script type="text/javascript">
+				AC_VHost_Embed(557013,600,600, "", 1, 1,1608129, 0, 0, 0, "fa886b412cf5bc1995545e1635002d5e", 8)
+			</script>
+    		<div id="input">
+        		<input type="text" speech="speech" x-webkit-speech="x-webkit-speech" onspeechchange="say(this.value)" onwebkitspeechchange="say(this.value)" />
+			</div>
+		</center>
+	</body>
+</html> 
